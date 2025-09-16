@@ -1,0 +1,4 @@
+threads: 5
+limit: 100
+print_mode: immediate
+division_mode: range
