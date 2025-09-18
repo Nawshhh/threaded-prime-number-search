@@ -14,7 +14,6 @@ void PrimeFinder::run(const Config& config) {
         int range_size = config.limit / config.threads;
         for (int i = 0; i < config.threads; ++i) {
             int start = i * range_size + 1;
-            
             int end = (i == config.threads - 1) ? config.limit : (i + 1) * range_size;
             workers.emplace_back(&PrimeFinder::workerRange, this, i, start, end, config.print_mode);
         }
@@ -52,11 +51,9 @@ void PrimeFinder::workerRange(int thread_id, int start, int end, const std::stri
         if (isPrime(i)) {
             if (print_mode == "immediate") {
                 std::lock_guard<std::mutex> lock(io_mutex_);
-                // add the search range to the immediate printout
                 std::cout << "[" << getCurrentTimestamp() << "] Thread " << thread_id 
-                          << " (" << start << "-" << end << ") found prime: " << i << std::endl;
-            } else { // "wait" mode
-                // create a result object, now including the start and end range
+                          << " (" << start << "-" << end << ") found a prime number: " << i << std::endl;
+            } else { 
                 local_results.push_back({i, thread_id, getCurrentTimestamp(), start, end});
             }
         }
@@ -74,8 +71,9 @@ void PrimeFinder::workerInterleaved(int thread_id, int start_num, int step, int 
         if (isPrime(i)) {
             if (print_mode == "immediate") {
                 std::lock_guard<std::mutex> lock(io_mutex_);
-                std::cout << "[" << getCurrentTimestamp() << "] Thread " << thread_id << " found prime: " << i << std::endl;
-            } else { // "wait" mode
+                std::cout << "[" << getCurrentTimestamp() << "] Thread " << thread_id 
+                          << " found a prime number: " << i << std::endl;
+            } else { 
                 local_results.push_back({i, thread_id, getCurrentTimestamp()});
             }
         }
