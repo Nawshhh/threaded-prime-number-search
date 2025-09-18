@@ -14,7 +14,6 @@ void PrimeFinder::run(const Config& config) {
         int range_size = config.limit / config.threads;
         for (int i = 0; i < config.threads; ++i) {
             int start = i * range_size + 1;
-            
             int end = (i == config.threads - 1) ? config.limit : (i + 1) * range_size;
             workers.emplace_back(&PrimeFinder::workerRange, this, i, start, end, config.print_mode);
         }
@@ -52,16 +51,16 @@ void PrimeFinder::workerRange(int thread_id, int start, int end, const std::stri
         if (isPrime(i)) {
             if (print_mode == "immediate") {
                 std::lock_guard<std::mutex> lock(io_mutex_);
-                // add the search range to the immediate printout
+                // **CHANGED**: Print a generic message instead of the number `i`.
                 std::cout << "[" << getCurrentTimestamp() << "] Thread " << thread_id 
-                          << " (" << start << "-" << end << ") found prime: " << i << std::endl;
-            } else { // "wait" mode
-                // create a result object, now including the start and end range
+                          << " (" << start << "-" << end << ") found a prime number." << std::endl;
+            } else { // "wait" mode still collects the actual prime number
                 local_results.push_back({i, thread_id, getCurrentTimestamp(), start, end});
             }
         }
     }
     
+    // This part for "wait" mode is unchanged.
     if (print_mode == "wait" && !local_results.empty()) {
         std::lock_guard<std::mutex> lock(vector_mutex_);
         found_primes_.insert(found_primes_.end(), local_results.begin(), local_results.end());
@@ -74,13 +73,16 @@ void PrimeFinder::workerInterleaved(int thread_id, int start_num, int step, int 
         if (isPrime(i)) {
             if (print_mode == "immediate") {
                 std::lock_guard<std::mutex> lock(io_mutex_);
-                std::cout << "[" << getCurrentTimestamp() << "] Thread " << thread_id << " found prime: " << i << std::endl;
-            } else { // "wait" mode
+                // **CHANGED**: Print a generic message instead of the number `i`.
+                std::cout << "[" << getCurrentTimestamp() << "] Thread " << thread_id 
+                          << " found a prime number." << std::endl;
+            } else { // "wait" mode still collects the actual prime number
                 local_results.push_back({i, thread_id, getCurrentTimestamp()});
             }
         }
     }
 
+    // This part for "wait" mode is unchanged.
     if (print_mode == "wait" && !local_results.empty()) {
         std::lock_guard<std::mutex> lock(vector_mutex_);
         found_primes_.insert(found_primes_.end(), local_results.begin(), local_results.end());

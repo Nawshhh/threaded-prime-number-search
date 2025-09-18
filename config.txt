@@ -1,4 +1,4 @@
 threads: 5
 limit: 100
-print_mode: immediate
+print_mode: wait
 division_mode: range
