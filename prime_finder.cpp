@@ -51,16 +51,14 @@ void PrimeFinder::workerRange(int thread_id, int start, int end, const std::stri
         if (isPrime(i)) {
             if (print_mode == "immediate") {
                 std::lock_guard<std::mutex> lock(io_mutex_);
-                // **CHANGED**: Print a generic message instead of the number `i`.
                 std::cout << "[" << getCurrentTimestamp() << "] Thread " << thread_id 
-                          << " (" << start << "-" << end << ") found a prime number." << std::endl;
-            } else { // "wait" mode still collects the actual prime number
+                          << " (" << start << "-" << end << ") found a prime number: " << i << std::endl;
+            } else { 
                 local_results.push_back({i, thread_id, getCurrentTimestamp(), start, end});
             }
         }
     }
     
-    // This part for "wait" mode is unchanged.
     if (print_mode == "wait" && !local_results.empty()) {
         std::lock_guard<std::mutex> lock(vector_mutex_);
         found_primes_.insert(found_primes_.end(), local_results.begin(), local_results.end());
@@ -73,16 +71,14 @@ void PrimeFinder::workerInterleaved(int thread_id, int start_num, int step, int 
         if (isPrime(i)) {
             if (print_mode == "immediate") {
                 std::lock_guard<std::mutex> lock(io_mutex_);
-                // **CHANGED**: Print a generic message instead of the number `i`.
                 std::cout << "[" << getCurrentTimestamp() << "] Thread " << thread_id 
-                          << " found a prime number." << std::endl;
-            } else { // "wait" mode still collects the actual prime number
+                          << " found a prime number: " << i << std::endl;
+            } else { 
                 local_results.push_back({i, thread_id, getCurrentTimestamp()});
             }
         }
     }
 
-    // This part for "wait" mode is unchanged.
     if (print_mode == "wait" && !local_results.empty()) {
         std::lock_guard<std::mutex> lock(vector_mutex_);
         found_primes_.insert(found_primes_.end(), local_results.begin(), local_results.end());

@@ -4,11 +4,10 @@
 #include "prime_finder.h"
 
 int main() {
-    Config config; 
-    // read and validate the config file
+    Config config;
     if (!readConfig("config.txt", config)) {
         std::cerr << "Terminating due to configuration error." << std::endl;
-        return 1; // exit lang kasi gusto ko
+        return 1;
     }
 
     std::cout << "--- Configuration ---" << std::endl;
@@ -18,7 +17,7 @@ int main() {
     std::cout << "Division mode: " << config.division_mode << std::endl;
     std::cout << "---------------------\n" << std::endl;
     
-    std::cout << "Program start timestamp: " << getCurrentTimestamp() << std::endl;
+    std::cout << "Program start timestamp: " << getCurrentTimestamp() << "\n" <<std::endl;
 
     PrimeFinder finder;
     finder.run(config);
@@ -34,7 +33,7 @@ int main() {
                 std::cout << " (" << result.range_start << "-" << result.range_end << ")";
             }
             
-            std::cout << " found prime: " << result.number << std::endl;
+            std::cout << " found a prime number: " << result.number << std::endl;
         }
     }
 
