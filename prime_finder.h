@@ -33,9 +33,9 @@ private:
     
     bool isPrime(int n) const;
 
-    std::vector<PrimeResult> found_primes_;
-    std::mutex io_mutex_;
-    std::mutex vector_mutex_;
+    std::vector<PrimeResult> found_primes;
+    std::mutex io_mutex;
+    std::mutex vector_mutex;
 };
 
 #endif 

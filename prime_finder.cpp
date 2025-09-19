@@ -7,7 +7,7 @@
 #include <cmath>
 
 void PrimeFinder::run(const Config& config) {
-    found_primes_.clear();
+    found_primes.clear();
     std::vector<std::thread> workers;
 
     if (config.division_mode == "range") {
@@ -28,11 +28,11 @@ void PrimeFinder::run(const Config& config) {
     }
 
     if (config.print_mode == "wait") {
-        std::sort(found_primes_.begin(), found_primes_.end());
+        std::sort(found_primes.begin(), found_primes.end());
     }
 }
 const std::vector<PrimeResult>& PrimeFinder::getPrimes() const {
-    return found_primes_;
+    return found_primes;
 }
 bool PrimeFinder::isPrime(int n) const {
     if (n <= 1) return false;
@@ -50,7 +50,7 @@ void PrimeFinder::workerRange(int thread_id, int start, int end, const std::stri
     for (int i = start; i <= end; ++i) {
         if (isPrime(i)) {
             if (print_mode == "immediate") {
-                std::lock_guard<std::mutex> lock(io_mutex_);
+                std::lock_guard<std::mutex> lock(io_mutex);
                 std::cout << "[" << getCurrentTimestamp() << "] Thread " << thread_id 
                           << " (" << start << "-" << end << ") found a prime number: " << i << std::endl;
             } else { 
@@ -60,8 +60,8 @@ void PrimeFinder::workerRange(int thread_id, int start, int end, const std::stri
     }
     
     if (print_mode == "wait" && !local_results.empty()) {
-        std::lock_guard<std::mutex> lock(vector_mutex_);
-        found_primes_.insert(found_primes_.end(), local_results.begin(), local_results.end());
+        std::lock_guard<std::mutex> lock(vector_mutex);
+        found_primes.insert(found_primes.end(), local_results.begin(), local_results.end());
     }
 }
 
@@ -70,7 +70,7 @@ void PrimeFinder::workerInterleaved(int thread_id, int start_num, int step, int 
     for (int i = start_num; i <= limit; i += step) {
         if (isPrime(i)) {
             if (print_mode == "immediate") {
-                std::lock_guard<std::mutex> lock(io_mutex_);
+                std::lock_guard<std::mutex> lock(io_mutex);
                 std::cout << "[" << getCurrentTimestamp() << "] Thread " << thread_id 
                           << " found a prime number: " << i << std::endl;
             } else { 
@@ -80,7 +80,7 @@ void PrimeFinder::workerInterleaved(int thread_id, int start_num, int step, int 
     }
 
     if (print_mode == "wait" && !local_results.empty()) {
-        std::lock_guard<std::mutex> lock(vector_mutex_);
-        found_primes_.insert(found_primes_.end(), local_results.begin(), local_results.end());
+        std::lock_guard<std::mutex> lock(vector_mutex);
+        found_primes.insert(found_primes.end(), local_results.begin(), local_results.end());
     }
 }
