@@ -17,10 +17,8 @@ void PrimeFinder::run(const Config& config) {
             int end = (i == config.threads - 1) ? config.limit : (i + 1) * range_size;
             workers.emplace_back(&PrimeFinder::workerRange, this, i, start, end, config.print_mode);
         }
-    } else if (config.division_mode == "interleaved") {
-        for (int i = 0; i < config.threads; ++i) {
-            workers.emplace_back(&PrimeFinder::workerInterleaved, this, i, 2 + i, config.threads, config.limit, config.print_mode);
-        }
+    } else if (config.division_mode == "linear") {
+        runDivisibility(config);
     }
 
     for (auto& worker : workers) {
@@ -65,7 +63,7 @@ void PrimeFinder::workerRange(int thread_id, int start, int end, const std::stri
     }
 }
 
-void PrimeFinder::workerInterleaved(int thread_id, int start_num, int step, int limit, const std::string& print_mode) {
+void PrimeFinder::workerLinear(int thread_id, int start_num, int step, int limit, const std::string& print_mode) {
     std::vector<PrimeResult> local_results;
     for (int i = start_num; i <= limit; i += step) {
         if (isPrime(i)) {
@@ -82,5 +80,70 @@ void PrimeFinder::workerInterleaved(int thread_id, int start_num, int step, int 
     if (print_mode == "wait" && !local_results.empty()) {
         std::lock_guard<std::mutex> lock(vector_mutex);
         found_primes.insert(found_primes.end(), local_results.begin(), local_results.end());
+    }
+}
+
+bool PrimeFinder::checkDivisibilitySegment(int n, int start, int end) const {
+    if (n % 2 == 0 && n != 2) return false;
+    for (int d = start; d <= end; ++d) {
+        if (n % d == 0) return false;
+    }
+    return true;
+}
+
+void PrimeFinder::runDivisibility(const Config& config) {
+    found_primes.clear();
+
+    for (int n = 2; n <= config.limit; ++n) {
+        if (n <= 3) { // base cases
+            recordPrime(n, 0, config.print_mode);
+            continue;
+        }
+
+        int sqrtN = static_cast<int>(std::sqrt(n));
+        int chunk = (sqrtN - 2) / config.threads + 1;
+
+        std::vector<std::thread> workers;
+        std::vector<bool> results(config.threads, true);
+
+        for (int t = 0; t < config.threads; ++t) {
+            int start = 2 + t * chunk;
+            int end   = std::min(sqrtN, start + chunk - 1);
+
+            workers.emplace_back([&, t, start, end]() {
+                if (start <= end) {
+                    std::lock_guard<std::mutex> lock(io_mutex);
+                    std::cout << "[" << getCurrentTimestamp() << "] "
+                            << "Thread " << t << " checking divisors "
+                            << start << "-" << end << " for n=" << n
+                            << std::endl;
+                }
+                results[t] = checkDivisibilitySegment(n, start, end);
+            });
+        }
+
+        for (auto& w : workers) w.join();
+
+        bool isPrime = std::all_of(results.begin(), results.end(),
+                                   [](bool r) { return r; });
+
+        if (isPrime) {
+            recordPrime(n, 0, config.print_mode);
+        }
+    }
+
+    if (config.print_mode == "wait") {
+        std::sort(found_primes.begin(), found_primes.end());
+    }
+}
+
+void PrimeFinder::recordPrime(int n, int thread_id, const std::string& print_mode) {
+    if (print_mode == "immediate") {
+        std::lock_guard<std::mutex> lock(io_mutex);
+        std::cout << "[" << getCurrentTimestamp() << "] Thread " << thread_id
+                  << " found a prime number: " << n << std::endl;
+    } else {
+        std::lock_guard<std::mutex> lock(vector_mutex);
+        found_primes.push_back({n, thread_id, getCurrentTimestamp()});
     }
 }
