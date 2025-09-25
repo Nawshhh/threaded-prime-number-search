@@ -9,7 +9,7 @@ A simple multi-threaded C++ program that finds prime numbers up to a specified l
     * `wait`: Prints all primes in a sorted list at the end.
 * **`division_mode`**:
     * `range`: Each thread gets a contiguous block of numbers.
-    * `interleaved`: Threads take turns checking individual numbers.
+    * `linear`: Threads take turns checking individual numbers.
 
 ---
 
