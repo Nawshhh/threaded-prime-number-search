@@ -2,8 +2,8 @@
 
 A simple multi-threaded C++ program that finds prime numbers up to a specified limit. Its behavior is controlled through a `config.txt` file.
 
-* **`threads`**: The number of threads to use (must be > 0).
-* **`limit`**: The maximum number to check for primality (must be > 1).
+* **`[x] threads`**: The number of threads to use (must be > 0).
+* **`[y] limit`**: The maximum number to check for primality (must be > 1).
 * **`print_mode`**:
     * `immediate`: Prints primes instantly as they are found.
     * `wait`: Prints all primes in a sorted list at the end.
