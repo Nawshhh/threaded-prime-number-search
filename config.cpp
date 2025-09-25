@@ -64,8 +64,8 @@ bool readConfig(const std::string& filename, Config& out_config) {
 
 
     const std::string& division_mode = values["division_mode"];
-    if (division_mode != "range" && division_mode != "interleaved") {
-        std::cerr << "Error: Invalid value for 'division_mode'. Must be 'range' or 'interleaved'." << std::endl;
+    if (division_mode != "range" && division_mode != "linear") {
+        std::cerr << "Error: Invalid value for 'division_mode'. Must be 'range' or 'linear'." << std::endl;
         return false;
     }
     out_config.division_mode = division_mode;
