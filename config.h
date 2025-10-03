@@ -5,7 +5,7 @@
 
 struct Config {
     int threads;
-    int limit;
+    uint64_t limit;
     std::string print_mode;
     std::string division_mode;
 };

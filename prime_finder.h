@@ -7,13 +7,12 @@
 #include <string>
 
 struct PrimeResult {
-    int number;
+    uint64_t number;
     int thread_id;
     std::string timestamp;
-    int range_start = 0; 
-    int range_end = 0; 
+    uint64_t range_start = 0;
+    uint64_t range_end = 0;
 
-    // comparison operator to allow sorting the vector by the prime number
     bool operator<(const PrimeResult& other) const {
         return number < other.number;
     }
@@ -28,7 +27,7 @@ public:
     const std::vector<PrimeResult>& getPrimes() const;
 
 private:
-    void workerRange(int thread_id, int start, int end, const std::string& print_mode);
+    void workerRange(int thread_id, uint64_t start, uint64_t end, const std::string& print_mode);
     void workerLinear(int thread_id, int start_num, int step, int limit, const std::string& print_mode);
     
     bool isPrime(int n) const;

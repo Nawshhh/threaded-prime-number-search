@@ -4,6 +4,8 @@
 #include <sstream>
 #include <map>
 #include <vector>
+#include <charconv>   // from_chars
+#include <cstdint>    // uint64_t
 
 bool readConfig(const std::string& filename, Config& out_config) {
     std::ifstream config_file(filename);
@@ -46,9 +48,21 @@ bool readConfig(const std::string& filename, Config& out_config) {
     }
 
     try {
-        if (values["limit"].empty()) throw std::invalid_argument("is empty");
-        int limit = std::stoi(values["limit"]);
-        if (limit <= 1) throw std::out_of_range("must be greater than 1");
+        if (values["limit"].empty())
+            throw std::invalid_argument("is empty");
+
+        uint64_t limit = 0;
+        std::string s = values["limit"];
+
+        auto [ptr, ec] = std::from_chars(s.data(), s.data() + s.size(), limit);
+        if (ec == std::errc::invalid_argument)
+            throw std::invalid_argument("not a number");
+        if (ec == std::errc::result_out_of_range)
+            throw std::out_of_range("must not exceed UINT64_MAX (18446744073709551615)");
+
+        if (limit <= 1)
+            throw std::out_of_range("must be greater than 1");
+
         out_config.limit = limit;
     } catch (const std::exception& e) {
         std::cerr << "Error: Invalid value for 'limit'. " << e.what() << "." << std::endl;

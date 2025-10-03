@@ -12,12 +12,12 @@ int main() {
 
     std::cout << "--- Configuration ---" << std::endl;
     std::cout << "Threads: " << config.threads << std::endl;
-    std::cout << "Search up to: " << config.limit << std::endl;
+    std::cout << "Search up to: " << static_cast<unsigned long long>(config.limit) << std::endl;
     std::cout << "Print mode: " << config.print_mode << std::endl;
     std::cout << "Division mode: " << config.division_mode << std::endl;
     std::cout << "---------------------\n" << std::endl;
     
-    std::cout << "Program start timestamp: " << getCurrentTimestamp() << "\n" <<std::endl;
+    std::string startTime = getCurrentTimestamp();
 
     PrimeFinder finder;
     finder.run(config);
@@ -37,6 +37,7 @@ int main() {
         }
     }
 
+    std::cout << "Program start timestamp: " << startTime << "\n";
     std::cout << "\nProgram end timestamp: " << getCurrentTimestamp() << std::endl;
 
     return 0;

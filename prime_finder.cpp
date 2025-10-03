@@ -11,10 +11,10 @@ void PrimeFinder::run(const Config& config) {
     std::vector<std::thread> workers;
 
     if (config.division_mode == "range") {
-        int range_size = config.limit / config.threads;
+        uint64_t range_size = config.limit / config.threads;
         for (int i = 0; i < config.threads; ++i) {
-            int start = i * range_size + 1;
-            int end = (i == config.threads - 1) ? config.limit : (i + 1) * range_size;
+            uint64_t start = i * range_size + 1;
+            uint64_t end   = (i == config.threads - 1) ? config.limit : (i + 1) * range_size;
             workers.emplace_back(&PrimeFinder::workerRange, this, i, start, end, config.print_mode);
         }
     } else if (config.division_mode == "linear") {
@@ -43,7 +43,7 @@ bool PrimeFinder::isPrime(int n) const {
     return true;
 }
 
-void PrimeFinder::workerRange(int thread_id, int start, int end, const std::string& print_mode) {
+void PrimeFinder::workerRange(int thread_id, uint64_t start, uint64_t end, const std::string& print_mode) {
     std::vector<PrimeResult> local_results;
     for (int i = start; i <= end; ++i) {
         if (isPrime(i)) {
@@ -52,7 +52,7 @@ void PrimeFinder::workerRange(int thread_id, int start, int end, const std::stri
                 std::cout << "[" << getCurrentTimestamp() << "] Thread " << thread_id 
                           << " (" << start << "-" << end << ") found a prime number: " << i << std::endl;
             } else { 
-                local_results.push_back({i, thread_id, getCurrentTimestamp(), start, end});
+                local_results.emplace_back(i, thread_id, getCurrentTimestamp(), start, end);
             }
         }
     }
@@ -72,7 +72,11 @@ void PrimeFinder::workerLinear(int thread_id, int start_num, int step, int limit
                 std::cout << "[" << getCurrentTimestamp() << "] Thread " << thread_id 
                           << " found a prime number: " << i << std::endl;
             } else { 
-                local_results.push_back({i, thread_id, getCurrentTimestamp()});
+                local_results.emplace_back(
+                    static_cast<uint64_t>(i),
+                    thread_id,
+                    getCurrentTimestamp()
+                );
             }
         }
     }
@@ -144,6 +148,10 @@ void PrimeFinder::recordPrime(int n, int thread_id, const std::string& print_mod
                   << " found a prime number: " << n << std::endl;
     } else {
         std::lock_guard<std::mutex> lock(vector_mutex);
-        found_primes.push_back({n, thread_id, getCurrentTimestamp()});
+        found_primes.emplace_back(
+            static_cast<uint64_t>(n),
+            thread_id,
+            getCurrentTimestamp()
+        );
     }
 }
