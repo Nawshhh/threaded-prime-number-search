@@ -37,7 +37,8 @@ int main() {
         }
     }
 
-    std::cout << "Program start timestamp: " << startTime << "\n";
+    std::cout << "\n--- Summary ---" << std::endl;
+    std::cout << "Program start timestamp: " << startTime;
     std::cout << "\nProgram end timestamp: " << getCurrentTimestamp() << std::endl;
 
     return 0;
